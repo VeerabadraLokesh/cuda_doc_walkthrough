@@ -13,11 +13,8 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
 }
 
 __global__ void vector_add(float *out, float *a, float *b, int n) {
-    int index = 0;
-    int stride = 1;
-    for(int i = index; i < n; i += stride){
-        out[i] = a[i] + b[i];
-    }
+    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    out[tid] = a[tid] + b[tid];
 }
 
 int main(){
@@ -37,7 +34,9 @@ int main(){
     gpuErrchk(cudaMemcpy(d_a, a, sizeof(float) * N, cudaMemcpyHostToDevice));
     gpuErrchk(cudaMemcpy(d_b, b, sizeof(float) * N, cudaMemcpyHostToDevice));
 
-    vector_add<<<1,256>>>(d_out, d_a, d_b, N);
+    int grid_blocks = N/256;
+
+    vector_add<<<grid_blocks,256>>>(d_out, d_a, d_b, N);
     
     gpuErrchk(cudaMemcpy(out, d_out, sizeof(float) * N, cudaMemcpyDeviceToHost));
 

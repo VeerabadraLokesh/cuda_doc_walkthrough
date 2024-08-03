@@ -13,8 +13,8 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
 }
 
 __global__ void vector_add(float *out, float *a, float *b, int n) {
-    int index = 0;
-    int stride = 1;
+    int index = threadIdx.x;
+    int stride = blockDim.x;
     for(int i = index; i < n; i += stride){
         out[i] = a[i] + b[i];
     }
